@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -43,7 +45,28 @@ fun MainNavView() {
     var nowActiveIndex by remember {
         mutableStateOf(0)
     }
+
     val mainNavController = rememberNavController()
+    mainNavController.addOnDestinationChangedListener {
+        _,_,_ -> val a = {}
+        println(a)
+    }
+    mainNavController.addOnDestinationChangedListener {
+        _,destination,_ ->
+            MainNavRoute.apply {
+                when (destination.route) {
+                    HOME -> {
+                        nowActiveIndex = 0
+                    }
+                    COUNTDOWN -> {
+                        nowActiveIndex = 1
+                    }
+                    STOPWATCH -> {
+                        nowActiveIndex = 2
+                    }
+                }
+            }
+    }
     Scaffold(modifier = Modifier.fillMaxSize(), bottomBar = {
         NavigationBar {
             navList.forEachIndexed { index, pair ->
@@ -53,13 +76,13 @@ fun MainNavView() {
                         nowActiveIndex = index
                         when (index) {
                             0 -> {
-                                mainNavController.navigate(MainNavRoute.HOME)
+                                mainNavController.mainNavTo(MainNavRoute.HOME)
                             }
                             1 -> {
-                                mainNavController.navigate(MainNavRoute.COUNTDOWN)
+                                mainNavController.mainNavTo(MainNavRoute.COUNTDOWN)
                             }
                             2 -> {
-                                mainNavController.navigate(MainNavRoute.STOPWATCH)
+                                mainNavController.mainNavTo(MainNavRoute.STOPWATCH)
                             }
                         }
                     },
@@ -94,5 +117,11 @@ fun MainNavView() {
                 }
             }
         }
+    }
+}
+
+fun NavHostController.mainNavTo(route:String) {
+    this.navigate(route) {
+        popUpTo(this@mainNavTo.graph.findStartDestination().id)
     }
 }
