@@ -17,14 +17,22 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.coderpwh.timemanager.ui.theme.TimeManagerTheme
 
 @Composable
 fun HomeView() {
+    val homeViewModel:HomeViewModel = viewModel()
+    val timeState by homeViewModel.timeState.collectAsState()
+    val uiState by homeViewModel.uiState.collectAsState()
+    val dateState by homeViewModel.dateState.collectAsState()
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -34,15 +42,22 @@ fun HomeView() {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Row {
+                    val pmActive = when(uiState.timeMode) {
+                        TimeMode.PM -> true
+                        TimeMode.AM -> false
+                    }
                     OutlinedButton(onClick = { /*TODO*/ },colors=ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = if(pmActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
                     ), shape = RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)) {
-                        Text(text = "PM")
+                        Text(text = "PM", color = if (pmActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                     OutlinedButton(onClick = { /*TODO*/ },
-                        shape = RoundedCornerShape(topEnd = 10.dp,bottomEnd = 10.dp)
+                        shape = RoundedCornerShape(topEnd = 10.dp,bottomEnd = 10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if(!pmActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
+                        )
                     ) {
-                        Text(text = "AM")
+                        Text(text = "AM",color = if (!pmActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                 }
                 Switch(checked = false, onCheckedChange = {})
@@ -55,14 +70,14 @@ fun HomeView() {
                 verticalArrangement = Arrangement.Center
             ) {
                 Column {
-                    Text(text = "2020/02/11",
+                    Text(text = "${dateState.day}${dateState.week}",
                         modifier = Modifier.padding(bottom = 15.dp, start = 5.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        TimeTag(text = "11")
-                        TimeTag(text = "11")
-                        TimeTag(text = ":")
-                        TimeTag(text = "11")
-                        TimeTag(text = "11")
+                        TimeTag(content = timeState.hour)
+                        Text(text = ":")
+                        TimeTag(content = timeState.minute)
+                        Text(text = ":")
+                        TimeTag(content = timeState.second)
                     }
                 }
             }
@@ -72,13 +87,13 @@ fun HomeView() {
 }
 
 @Composable
-fun TimeTag(text: String) {
+fun TimeTag(content: Int) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ), modifier = Modifier.padding(vertical = 5.dp)
     ) {
-        Text(text = text, Modifier.padding(horizontal = 10.dp, vertical = 12.dp))
+        Text(text = content.toString(), Modifier.padding(horizontal = 10.dp, vertical = 12.dp))
     }
 }
 
