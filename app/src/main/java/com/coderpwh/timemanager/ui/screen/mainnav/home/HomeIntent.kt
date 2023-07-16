@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
+sealed class UIIntent {
+    data class ChangeImmersionState(val value:Boolean):UIIntent()
+}
 class HomeViewModel:ViewModel() {
     private val WeekList = listOf<String>("一","二","三","四","五","六","七")
     private var _dateState = MutableStateFlow(DateState())
@@ -18,6 +21,15 @@ class HomeViewModel:ViewModel() {
     val uiState = _uiState
     init {
         initTime()
+    }
+
+    fun sendUIIntent(uiIntent: UIIntent) {
+        when(uiIntent) {
+            is UIIntent.ChangeImmersionState -> uiState.apply {
+                value = value.copy(immersionShow = uiIntent.value)
+            }
+
+        }
     }
     private fun initTime () {
         LocalDateTime.now().apply {

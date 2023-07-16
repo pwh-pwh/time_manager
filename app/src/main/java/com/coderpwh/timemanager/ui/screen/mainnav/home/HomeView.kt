@@ -17,11 +17,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +36,14 @@ fun HomeView() {
     val timeState by homeViewModel.timeState.collectAsState()
     val uiState by homeViewModel.uiState.collectAsState()
     val dateState by homeViewModel.dateState.collectAsState()
+    val orientationState by rememberUpdatedState(newValue =  LocalConfiguration.current.orientation)
+   LaunchedEffect(orientationState) {
+        if(orientationState==1) {
+            homeViewModel.sendUIIntent(UIIntent.ChangeImmersionState(false))
+        } else {
+            homeViewModel.sendUIIntent(UIIntent.ChangeImmersionState(true))
+        }
+   }
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -60,7 +71,9 @@ fun HomeView() {
                         Text(text = "AM",color = if (!pmActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                 }
-                Switch(checked = false, onCheckedChange = {})
+                Switch(checked = uiState.immersionShow, onCheckedChange = {
+                    homeViewModel.sendUIIntent(UIIntent.ChangeImmersionState(!uiState.immersionShow))
+                })
             }
             Column(
                 modifier = Modifier
